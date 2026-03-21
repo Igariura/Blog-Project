@@ -1,0 +1,45 @@
+services:
+
+  # ---- NGINX — the reverse proxy ----
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - frontend
+      - api
+    restart: unless-stopped
+
+  # ---- FRONTEND ----
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+
+  # ---- API ----
+  api:
+    build:
+      context: ./api
+      network: host
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ---- DATABASE ----
+  db:
+    image: postgres:15-alpine
+    env_file: .env
+    volumes:
+      - blog_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bloguser -d blogdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  blog_data:
