@@ -28,8 +28,8 @@ jobs:
           context: ./api
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/blog-api:latest
-            ${{ secrets.DOCKER_USERNAME }}/blog-api:${{ github.sha }}
+            lildickey10719/blog-api:latest
+            lildickey10719/blog-api:${{ github.sha }}
 
       # Step 4 — Build and push Frontend image
       - name: Build and push Frontend image
@@ -38,9 +38,8 @@ jobs:
           context: ./frontend
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/blog-frontend:latest
-            ${{ secrets.DOCKER_USERNAME }}/blog-frontend:${{ github.sha }}
-
+            lildickey10719/blog-frontend:latest
+            lildickey10719/blog-frontend:${{ github.sha }}
       # Step 5 — Deploy to EC2
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.0
