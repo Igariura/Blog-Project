@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #f8f9fa;
+      font-family: 'Segoe UI', sans-serif;
+      color: #333;
+    }
+
+    /* ---- HEADER ---- */
+    header {
+      background: #1a1a2e;
+      color: white;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 { font-size: 1.5rem; }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: #aaa;
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #aaa;
+    }
+    .dot.online { background: #22c55e; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+    /* ---- MAIN ---- */
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    /* ---- FORM ---- */
+    .form-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .form-card h2 {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      color: #1a1a2e;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+    }
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: #1a1a2e;
+    }
+    .form-group textarea { height: 100px; resize: vertical; }
+    .submit-btn {
+      background: #1a1a2e;
+      color: white;
+      border: none;
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s;
+      width: 100%;
+    }
+    .submit-btn:hover { background: #16213e; }
+    .submit-btn:disabled { background: #aaa; cursor: not-allowed; }
+
+    /* ---- POSTS ---- */
+    .posts-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .posts-header h2 { font-size: 1.1rem; color: #1a1a2e; }
+    .post-count {
+      background: #1a1a2e;
+      color: white;
+      font-size: 0.7rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+    }
+
+    .post-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+      from { opacity:0; transform:translateY(8px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+    .post-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #1a1a2e;
+    }
+    .post-content {
+      color: #555;
+      font-size: 0.92rem;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+    .post-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .post-meta {
+      font-size: 0.75rem;
+      color: #999;
+    }
+    .post-meta span { color: #1a1a2e; font-weight: 600; }
+    .delete-btn {
+      background: none;
+      border: 1px solid #ffcccc;
+      color: #e53e3e;
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .delete-btn:hover {
+      background: #fff5f5;
+      border-color: #e53e3e;
+    }
+
+    /* ---- EMPTY STATE ---- */
+    .empty {
+      text-align: center;
+      padding: 3rem;
+      color: #aaa;
+    }
+    .empty .emoji { font-size: 2.5rem; margin-bottom: 0.5rem; }
+
+    /* ---- TOAST ---- */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #1a1a2e;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      transition: transform 0.3s;
+      z-index: 999;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { background: #22c55e; }
+    .toast.error { background: #e53e3e; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📝 Blog</h1>
+  <div class="status">
+    <div class="dot" id="dot"></div>
+    <span id="statusText">Connecting...</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- CREATE POST FORM -->
+  <div class="form-card">
+    <h2>Write a New Post</h2>
+    <div class="form-group">
+      <label>Title</label>
+      <input type="text" id="title" placeholder="Enter post title..."/>
+    </div>
+    <div class="form-group">
+      <label>Content</label>
+      <textarea id="content" placeholder="Write your post content..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Author</label>
+      <input type="text" id="author" placeholder="Your name..."/>
+    </div>
+    <button class="submit-btn" id="submitBtn" onclick="createPost()">
+      Publish Post
+    </button>
+  </div>
+
+  <!-- POSTS LIST -->
+  <div class="posts-header">
+    <h2>All Posts</h2>
+    <span class="post-count" id="postCount">0 posts</span>
+  </div>
+
+  <div id="postsList">
+    <div class="empty">
+      <div class="emoji">📭</div>
+      <p>Loading posts...</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = '/api';
+
+  // ---- CHECK API STATUS ----
+  async function checkStatus() {
+    try {
+      const res = await fetch(`${API}/health`);
+      const data = await res.json();
+      if (data.status === 'healthy') {
+        document.getElementById('dot').classList.add('online');
+        document.getElementById('statusText').textContent = 'API Online';
+      }
+    } catch (e) {
+      document.getElementById('dot').style.background = '#e53e3e';
+      document.getElementById('statusText').textContent = 'API Offline';
+    }
+  }
+
+  // ---- LOAD ALL POSTS ----
+  async function loadPosts() {
+    try {
+      const res = await fetch(`${API}/posts`);
+      const posts = await res.json();
+      const list = document.getElementById('postsList');
+      const count = document.getElementById('postCount');
+      count.textContent = `${posts.length} post${posts.length !== 1 ? 's' : ''}`;
+      if (posts.length === 0) {
+        list.innerHTML = `
+          <div class="empty">
+            <div class="emoji">📭</div>
+            <p>No posts yet. Write the first one!</p>
+          </div>`;
+        return;
+      }
+      list.innerHTML = posts.map(post => `
+        <div class="post-card" id="post-${post.id}">
+          <div class="post-title">${escapeHtml(post.title)}</div>
+          <div class="post-content">${escapeHtml(post.content)}</div>
+          <div class="post-footer">
+            <div class="post-meta">
+              By <span>${escapeHtml(post.author)}</span>
+              · ${formatDate(post.created_at)}
+            </div>
+            <button class="delete-btn" onclick="deletePost(${post.id})">
+              Delete
+            </button>
+          </div>
+        </div>
+      `).join('');
+    } catch (e) {
+      document.getElementById('postsList').innerHTML = `
+        <div class="empty">
+          <div class="emoji">⚠️</div>
+          <p>Could not load posts. Is the API running?</p>
+        </div>`;
+    }
+  }
+
+  // ---- CREATE POST ----
+  async function createPost() {
+    const title   = document.getElementById('title').value.trim();
+    const content = document.getElementById('content').value.trim();
+    const author  = document.getElementById('author').value.trim();
+    const btn     = document.getElementById('submitBtn');
+
+    if (!title || !content || !author) {
+      showToast('Please fill in all fields!', 'error');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Publishing...';
+
+    try {
+      const res = await fetch(`${API}/posts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, content, author })
+      });
+      if (res.ok) {
+        document.getElementById('title').value = '';
+        document.getElementById('content').value = '';
+        document.getElementById('author').value = '';
+        showToast('Post published! ✅', 'success');
+        await loadPosts();
+      } else {
+        showToast('Failed to publish post', 'error');
+      }
+    } catch (e) {
+      showToast('Cannot reach API!', 'error');
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Publish Post';
+  }
+
+  // ---- DELETE POST ----
+  async function deletePost(id) {
+    try {
+      const res = await fetch(`${API}/posts/${id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        showToast('Post deleted!', 'success');
+        await loadPosts();
+      } else {
+        showToast('Failed to delete post', 'error');
+      }
+    } catch (e) {
+      showToast('Cannot reach API!', 'error');
+    }
+  }
+
+  // ---- HELPERS ----
+  function formatDate(timestamp) {
+    return new Date(timestamp).toLocaleDateString('en-US', {
+      year: 'numeric', month: 'short', day: 'numeric'
+    });
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(text));
+    return div.innerHTML;
+  }
+
+  function showToast(message, type = '') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast ${type} show`;
+    setTimeout(() => { toast.className = 'toast'; }, 3000);
+  }
+
+  // ---- INIT ----
+  checkStatus();
+  loadPosts();
+  setInterval(loadPosts, 15000);
+</script>
+
+</body>
+</html>
